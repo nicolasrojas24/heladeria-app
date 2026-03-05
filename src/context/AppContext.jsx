@@ -1,14 +1,36 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { saboresIniciales, paletasIniciales, ventasIniciales, gastosIniciales, metasIniciales, PORCIONES_POR_BACHA } from '../data/initialData'
 
 const AppContext = createContext(null)
 
+// ── localStorage helpers ──────────────────────────────────────────────────────
+const load = (key, fallback) => {
+  try {
+    const val = localStorage.getItem(key)
+    return val ? JSON.parse(val) : fallback
+  } catch {
+    return fallback
+  }
+}
+
+const save = (key, value) => {
+  try { localStorage.setItem(key, JSON.stringify(value)) } catch {}
+}
+
+// ── Provider ──────────────────────────────────────────────────────────────────
 export function AppProvider({ children }) {
-  const [sabores, setSabores] = useState(saboresIniciales)
-  const [paletas, setPaletas] = useState(paletasIniciales)
-  const [ventas, setVentas] = useState(ventasIniciales)
-  const [gastos, setGastos] = useState(gastosIniciales)
-  const [metas, setMetas] = useState(metasIniciales)
+  const [sabores, setSabores] = useState(() => load('heladeria_sabores', saboresIniciales))
+  const [paletas, setPaletas] = useState(() => load('heladeria_paletas', paletasIniciales))
+  const [ventas,  setVentas]  = useState(() => load('heladeria_ventas',  ventasIniciales))
+  const [gastos,  setGastos]  = useState(() => load('heladeria_gastos',  gastosIniciales))
+  const [metas,   setMetas]   = useState(() => load('heladeria_metas',   metasIniciales))
+
+  // Persistir en localStorage cada vez que cambia el estado
+  useEffect(() => { save('heladeria_sabores', sabores) }, [sabores])
+  useEffect(() => { save('heladeria_paletas', paletas) }, [paletas])
+  useEffect(() => { save('heladeria_ventas',  ventas)  }, [ventas])
+  useEffect(() => { save('heladeria_gastos',  gastos)  }, [gastos])
+  useEffect(() => { save('heladeria_metas',   metas)   }, [metas])
 
   // Alertas: sabores con menos de 15 porciones restantes y aún disponibles
   const alertas = sabores.filter(s => s.porcionesRestantes < 15 && s.disponible)
@@ -25,7 +47,6 @@ export function AppProvider({ children }) {
           : p
       ))
     } else {
-      // Contar cuántas bolas de cada sabor se vendieron
       const conteo = {}
       venta.saboresElegidos.forEach(nombre => {
         conteo[nombre] = (conteo[nombre] || 0) + 1
