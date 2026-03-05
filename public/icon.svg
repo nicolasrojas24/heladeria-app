@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0ea5e9"/>
+  <!-- Cono -->
+  <polygon points="256,420 170,240 342,240" fill="#fcd34d"/>
+  <line x1="256" y1="420" x2="213" y2="310" stroke="#f59e0b" stroke-width="3"/>
+  <line x1="256" y1="420" x2="242" y2="310" stroke="#f59e0b" stroke-width="3"/>
+  <line x1="256" y1="420" x2="270" y2="310" stroke="#f59e0b" stroke-width="3"/>
+  <line x1="256" y1="420" x2="299" y2="310" stroke="#f59e0b" stroke-width="3"/>
+  <!-- Bola 1 (base) -->
+  <circle cx="220" cy="230" r="55" fill="#fca5a5"/>
+  <!-- Bola 2 (base) -->
+  <circle cx="292" cy="230" r="55" fill="#bae6fd"/>
+  <!-- Bola 3 (top) -->
+  <circle cx="256" cy="165" r="55" fill="#f9a8d4"/>
+  <!-- Brillo bola 1 -->
+  <circle cx="208" cy="215" r="12" fill="white" opacity="0.4"/>
+  <!-- Brillo bola 2 -->
+  <circle cx="280" cy="215" r="12" fill="white" opacity="0.4"/>
+  <!-- Brillo bola 3 -->
+  <circle cx="244" cy="150" r="12" fill="white" opacity="0.4"/>
+</svg>
