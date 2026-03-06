@@ -88,3 +88,21 @@ CREATE POLICY "auth_all_paletas"  ON paletas  FOR ALL TO authenticated USING (tr
 CREATE POLICY "auth_all_ventas"   ON ventas   FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "auth_all_gastos"   ON gastos   FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "auth_all_metas"    ON metas    FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- ══════════════════════════════════════════════════════════════════
+-- TRIGGER: crea perfil automáticamente al registrar un usuario
+-- ══════════════════════════════════════════════════════════════════
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.perfiles (id, nombre, rol)
+  VALUES (NEW.id, NEW.email, 'lector')
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
