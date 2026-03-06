@@ -4,7 +4,9 @@
       "Bash(curl:*)",
       "Bash(npm run:*)",
       "Bash(npm install:*)",
-      "Bash(npx pwa-assets-generator:*)"
+      "Bash(npx pwa-assets-generator:*)",
+      "Bash(git config:*)",
+      "Bash(gh:*)"
     ]
   }
 }

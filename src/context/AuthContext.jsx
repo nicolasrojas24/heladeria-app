@@ -1,38 +1,55 @@
-import { createContext, useContext, useState } from 'react'
-
-const USUARIOS = [
-  { usuario: 'admin',  clave: 'admin123',  rol: 'admin',  nombre: 'Administrador' },
-  { usuario: 'lector', clave: 'lector123', rol: 'lector', nombre: 'Lector' },
-]
+import { createContext, useContext, useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [usuario, setUsuario] = useState(() => {
-    try {
-      const saved = localStorage.getItem('heladeria_user')
-      return saved ? JSON.parse(saved) : null
-    } catch {
-      return null
-    }
-  })
+  const [usuario, setUsuario]         = useState(null)
+  const [cargandoAuth, setCargandoAuth] = useState(true)
 
-  const login = (user, clave) => {
-    const found = USUARIOS.find(u => u.usuario === user && u.clave === clave)
-    if (!found) return false
-    const data = { usuario: found.usuario, nombre: found.nombre, rol: found.rol }
-    localStorage.setItem('heladeria_user', JSON.stringify(data))
-    setUsuario(data)
-    return true
+  // Cargar perfil desde la tabla perfiles
+  const cargarPerfil = async (user) => {
+    const { data } = await supabase
+      .from('perfiles')
+      .select('nombre, rol')
+      .eq('id', user.id)
+      .single()
+    if (data) {
+      setUsuario({ id: user.id, email: user.email, nombre: data.nombre, rol: data.rol })
+    }
   }
 
-  const logout = () => {
-    localStorage.removeItem('heladeria_user')
+  // Verificar sesión existente al montar
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) await cargarPerfil(session.user)
+      setCargandoAuth(false)
+    })
+
+    // Escuchar cambios de sesión (login / logout / refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await cargarPerfil(session.user)
+      } else {
+        setUsuario(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const login = async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    return error ? error.message : null
+  }
+
+  const logout = async () => {
+    await supabase.auth.signOut()
     setUsuario(null)
   }
 
   return (
-    <AuthContext.Provider value={{ usuario, login, logout }}>
+    <AuthContext.Provider value={{ usuario, cargandoAuth, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
