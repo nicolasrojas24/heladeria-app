@@ -11,12 +11,25 @@ export function AuthProvider({ children }) {
   const cargarPerfil = async (user) => {
     const { data } = await supabase
       .from('perfiles')
-      .select('nombre, rol')
+      .select('nombre, rol, pagina_inicio')
       .eq('id', user.id)
       .single()
     if (data) {
-      setUsuario({ id: user.id, email: user.email, nombre: data.nombre, rol: data.rol })
+      setUsuario({
+        id:            user.id,
+        email:         user.email,
+        nombre:        data.nombre,
+        rol:           data.rol,
+        pagina_inicio: data.pagina_inicio || 'dashboard',
+      })
     }
+  }
+
+  const updatePerfil = async (datos) => {
+    if (!usuario) return
+    const { error } = await supabase.from('perfiles').update(datos).eq('id', usuario.id)
+    if (!error) setUsuario(prev => ({ ...prev, ...datos }))
+    return error ? error.message : null
   }
 
   // Verificar sesión existente al montar
@@ -49,7 +62,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ usuario, cargandoAuth, login, logout }}>
+    <AuthContext.Provider value={{ usuario, cargandoAuth, login, logout, updatePerfil }}>
       {children}
     </AuthContext.Provider>
   )

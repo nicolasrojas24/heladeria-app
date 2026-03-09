@@ -24,7 +24,8 @@ function Cargando({ texto }) {
 
 function AppContenido() {
   const { cargando } = useApp()
-  const [pagina, setPagina] = useState('dashboard')
+  const { usuario } = useAuth()
+  const [pagina, setPagina] = useState(usuario?.pagina_inicio || 'dashboard')
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
 
   if (cargando) return <Cargando texto="Cargando datos..." />
