@@ -10,12 +10,17 @@ const NAV = [
   { id: 'reportes',   label: 'Reportes',   icon: '📈' },
 ]
 
-export default function Sidebar({ pagina, setPagina }) {
+export default function Sidebar({ pagina, setPagina, abierto, onCerrar }) {
   const { alertas } = useApp()
   const { usuario, logout } = useAuth()
 
   return (
-    <aside className="w-64 shrink-0 bg-gradient-to-b from-sky-700 to-sky-900 text-white flex flex-col shadow-2xl z-10">
+    <aside className={`
+      w-64 shrink-0 bg-gradient-to-b from-sky-700 to-sky-900 text-white flex flex-col shadow-2xl
+      fixed inset-y-0 left-0 z-30 transition-transform duration-300
+      lg:static lg:translate-x-0
+      ${abierto ? 'translate-x-0' : '-translate-x-full'}
+    `}>
       {/* Logo */}
       <div className="p-6 border-b border-sky-600/50">
         <div className="flex items-center gap-3">

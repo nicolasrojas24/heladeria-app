@@ -104,6 +104,39 @@ export function AppProvider({ children }) {
     }
   }, [paletas, sabores])
 
+  const deleteVenta = useCallback(async (venta) => {
+    const { error } = await supabase.from('ventas').delete().eq('id', venta.id)
+    if (error) { console.error('deleteVenta:', error); return }
+    setVentas(prev => prev.filter(v => v.id !== venta.id))
+
+    if (venta.tipo === 'paleta') {
+      const paleta = paletas.find(p => p.id === venta.paletaId)
+      if (!paleta) return
+      const newStock = paleta.stock + venta.cantidad
+      await supabase.from('paletas').update({ stock: newStock }).eq('id', venta.paletaId)
+      setPaletas(prev => prev.map(p => p.id === venta.paletaId ? { ...p, stock: newStock } : p))
+    } else {
+      const conteo = {}
+      venta.saboresElegidos.forEach(n => { conteo[n] = (conteo[n] || 0) + 1 })
+      const nuevos = sabores.map(s => {
+        const inc = conteo[s.nombre] || 0
+        if (!inc) return s
+        const p = s.porcionesRestantes + inc
+        return { ...s, porcionesRestantes: p, disponible: p > 0 ? s.disponible : false }
+      })
+      setSabores(nuevos)
+      for (const s of nuevos) {
+        const orig = sabores.find(o => o.id === s.id)
+        if (orig && orig.porcionesRestantes !== s.porcionesRestantes) {
+          await supabase.from('sabores').update({
+            porciones_restantes: s.porcionesRestantes,
+            disponible: s.disponible,
+          }).eq('id', s.id)
+        }
+      }
+    }
+  }, [paletas, sabores])
+
   // ── Sabores ──
   const addSabor = useCallback(async (datos) => {
     const { data, error } = await supabase.from('sabores').insert({
@@ -193,7 +226,7 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
       sabores, paletas, ventas, alertas, gastos, metas, cargando,
-      addVenta,
+      addVenta, deleteVenta,
       addSabor, updateSabor, deleteSabor, addBacha, removeBacha,
       addPaleta, updatePaleta, deletePaleta,
       addGasto, deleteGasto, updateMetas,

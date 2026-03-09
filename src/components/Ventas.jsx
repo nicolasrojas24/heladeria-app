@@ -12,7 +12,7 @@ function DescVenta(v) {
 }
 
 export default function Ventas() {
-  const { sabores, paletas, ventas, addVenta } = useApp()
+  const { sabores, paletas, ventas, addVenta, deleteVenta } = useApp()
   const { usuario } = useAuth()
   const esAdmin = usuario?.rol === 'admin'
 
@@ -24,8 +24,9 @@ export default function Ventas() {
   const [cantidadPaleta, setCantidadPaleta] = useState(1)
 
   const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0])
-  const [error, setError]   = useState('')
-  const [exito, setExito]   = useState('')
+  const [error, setError]       = useState('')
+  const [exito, setExito]       = useState('')
+  const [confirmAnular, setConfirmAnular] = useState(null)
 
   // Sabores disponibles para vender
   const saboresDisp = sabores.filter(s => s.disponible && s.porcionesRestantes > 0)
@@ -306,7 +307,7 @@ export default function Ventas() {
               {ventasDia.map(v => (
                 <div
                   key={v.id}
-                  className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-sky-50/60 rounded-xl transition-colors">
+                  className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-sky-50/60 rounded-xl transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-sky-100 rounded-xl flex items-center justify-center text-lg shrink-0">
                       {TIPO_ICON[v.tipo]}
@@ -320,13 +321,23 @@ export default function Ventas() {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="font-bold text-gray-800 text-sm">{clp(v.total)}</p>
-                    {v.tipo !== 'paleta' && (
-                      <p className="text-xs text-gray-400">{v.bolas} bola{v.bolas > 1 ? 's' : ''}</p>
-                    )}
-                    {v.tipo === 'paleta' && (
-                      <p className="text-xs text-gray-400">{v.cantidad} × {clp(v.precio)}</p>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <p className="font-bold text-gray-800 text-sm">{clp(v.total)}</p>
+                      {v.tipo !== 'paleta' && (
+                        <p className="text-xs text-gray-400">{v.bolas} bola{v.bolas > 1 ? 's' : ''}</p>
+                      )}
+                      {v.tipo === 'paleta' && (
+                        <p className="text-xs text-gray-400">{v.cantidad} × {clp(v.precio)}</p>
+                      )}
+                    </div>
+                    {esAdmin && (
+                      <button
+                        onClick={() => setConfirmAnular(v)}
+                        className="opacity-0 group-hover:opacity-100 transition text-gray-300 hover:text-red-400 text-xl leading-none"
+                        title="Anular venta">
+                        ×
+                      </button>
                     )}
                   </div>
                 </div>
@@ -345,6 +356,30 @@ export default function Ventas() {
           )}
         </div>
       </div>
+
+      {confirmAnular && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
+            <p className="text-4xl mb-3">🚫</p>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">¿Anular esta venta?</h3>
+            <p className="text-gray-500 text-sm mb-1">{DescVenta(confirmAnular)}</p>
+            <p className="text-sky-600 font-bold text-lg mb-1">{clp(confirmAnular.total)}</p>
+            <p className="text-xs text-gray-400 mb-6">
+              Se restaurará el stock de {confirmAnular.tipo === 'paleta' ? 'la paleta' : 'los sabores'} automáticamente.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmAnular(null)}
+                className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                Cancelar
+              </button>
+              <button onClick={() => { deleteVenta(confirmAnular); setConfirmAnular(null) }}
+                className="flex-1 bg-pink-500 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-pink-600 transition">
+                Anular venta
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

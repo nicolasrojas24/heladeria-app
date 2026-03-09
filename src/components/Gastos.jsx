@@ -36,6 +36,7 @@ export default function Gastos() {
 
   const [filtroFecha, setFiltroFecha] = useState('')
   const [form, setForm] = useState({ fecha: todayStr(), categoria: 'Insumos', descripcion: '', monto: '' })
+  const [confirmDel, setConfirmDel] = useState(null)
 
   const hoyStr = new Date().toDateString()
   const mesActual = new Date().getMonth()
@@ -173,7 +174,7 @@ export default function Gastos() {
                   <span className="font-semibold text-pink-600 text-sm shrink-0">{clp(g.monto)}</span>
                   {isAdmin && (
                     <button
-                      onClick={() => deleteGasto(g.id)}
+                      onClick={() => setConfirmDel(g)}
                       className="ml-1 text-gray-300 hover:text-red-400 transition opacity-0 group-hover:opacity-100 text-lg leading-none"
                       title="Eliminar"
                     >
@@ -186,6 +187,29 @@ export default function Gastos() {
           )}
         </div>
       </div>
+
+      {confirmDel && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
+            <p className="text-4xl mb-3">🗑️</p>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">¿Eliminar gasto?</h3>
+            <p className="text-gray-500 text-sm mb-1">
+              <span className="font-semibold text-gray-700">"{confirmDel.descripcion}"</span>
+            </p>
+            <p className="text-pink-600 font-bold text-lg mb-6">{clp(confirmDel.monto)}</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDel(null)}
+                className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                Cancelar
+              </button>
+              <button onClick={() => { deleteGasto(confirmDel.id); setConfirmDel(null) }}
+                className="flex-1 bg-pink-500 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-pink-600 transition">
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
