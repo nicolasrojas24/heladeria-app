@@ -8,6 +8,7 @@ import Sabores from './components/Sabores'
 import Ventas from './components/Ventas'
 import Gastos from './components/Gastos'
 import Reportes from './components/Reportes'
+import Configuracion from './components/Configuracion'
 import Login from './components/Login'
 
 function Cargando({ texto }) {
@@ -68,8 +69,9 @@ function AppContenido() {
           {pagina === 'inventario' && <Inventario />}
           {pagina === 'sabores'    && <Sabores />}
           {pagina === 'ventas'     && <Ventas />}
-          {pagina === 'gastos'     && <Gastos />}
-          {pagina === 'reportes'   && <Reportes />}
+          {pagina === 'gastos'        && <Gastos />}
+          {pagina === 'reportes'      && <Reportes />}
+          {pagina === 'configuracion' && <Configuracion />}
         </main>
       </div>
     </div>

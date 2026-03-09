@@ -2,12 +2,13 @@ import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
 
 const NAV = [
-  { id: 'dashboard',  label: 'Dashboard',  icon: '📊' },
-  { id: 'inventario', label: 'Inventario', icon: '🪣' },
-  { id: 'sabores',    label: 'Sabores',    icon: '🍨' },
-  { id: 'ventas',     label: 'Ventas',     icon: '🛒' },
-  { id: 'gastos',     label: 'Gastos',     icon: '💸' },
-  { id: 'reportes',   label: 'Reportes',   icon: '📈' },
+  { id: 'dashboard',      label: 'Dashboard',      icon: '📊' },
+  { id: 'inventario',     label: 'Inventario',     icon: '🪣' },
+  { id: 'sabores',        label: 'Sabores',         icon: '🍨' },
+  { id: 'ventas',         label: 'Ventas',          icon: '🛒' },
+  { id: 'gastos',         label: 'Gastos',          icon: '💸' },
+  { id: 'reportes',       label: 'Reportes',        icon: '📈' },
+  { id: 'configuracion',  label: 'Configuración',   icon: '⚙️' },
 ]
 
 export default function Sidebar({ pagina, setPagina, abierto, onCerrar }) {

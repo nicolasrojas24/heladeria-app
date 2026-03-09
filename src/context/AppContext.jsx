@@ -34,24 +34,34 @@ export function AppProvider({ children }) {
   const [paletas,  setPaletas]  = useState([])
   const [ventas,   setVentas]   = useState([])
   const [gastos,   setGastos]   = useState([])
-  const [metas,    setMetas]    = useState({ diaria: 80000, semanal: 500000, mensual: 2000000 })
+  const [metas,    setMetas]    = useState({ diaria: 80000, semanal: 500000, mensual: 2000000, precio_1bola: 1500, precio_2bolas: 2500, precio_3bolas: 3000 })
+  const [perfiles, setPerfiles] = useState([])
   const [cargando, setCargando] = useState(true)
 
   // Cargar todos los datos desde Supabase al montar
   useEffect(() => {
     async function cargar() {
-      const [s, p, v, g, m] = await Promise.all([
+      const [s, p, v, g, m, pr] = await Promise.all([
         supabase.from('sabores').select('*').order('id'),
         supabase.from('paletas').select('*').order('id'),
         supabase.from('ventas').select('*').order('fecha', { ascending: false }),
         supabase.from('gastos').select('*').order('fecha', { ascending: false }),
         supabase.from('metas').select('*').eq('id', 1).single(),
+        supabase.from('perfiles').select('id, nombre, rol').order('rol'),
       ])
       if (s.data) setSabores(s.data.map(mapSabor))
       if (p.data) setPaletas(p.data)
       if (v.data) setVentas(v.data.map(mapVenta))
       if (g.data) setGastos(g.data)
-      if (m.data) setMetas({ diaria: m.data.diaria, semanal: m.data.semanal, mensual: m.data.mensual })
+      if (pr.data) setPerfiles(pr.data)
+      if (m.data) setMetas({
+        diaria:        m.data.diaria,
+        semanal:       m.data.semanal,
+        mensual:       m.data.mensual,
+        precio_1bola:  m.data.precio_1bola  ?? 1500,
+        precio_2bolas: m.data.precio_2bolas ?? 2500,
+        precio_3bolas: m.data.precio_3bolas ?? 3000,
+      })
       setCargando(false)
     }
     cargar()
@@ -207,6 +217,11 @@ export function AppProvider({ children }) {
     if (!error) setMetas(prev => ({ ...prev, ...nuevasMetas }))
   }, [])
 
+  const updateRol = useCallback(async (id, nuevoRol) => {
+    const { error } = await supabase.from('perfiles').update({ rol: nuevoRol }).eq('id', id)
+    if (!error) setPerfiles(prev => prev.map(p => p.id === id ? { ...p, rol: nuevoRol } : p))
+  }, [])
+
   // ── Paletas ──
   const addPaleta = useCallback(async (datos) => {
     const { data, error } = await supabase.from('paletas').insert(datos).select().single()
@@ -225,8 +240,9 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      sabores, paletas, ventas, alertas, gastos, metas, cargando,
+      sabores, paletas, ventas, alertas, gastos, metas, perfiles, cargando,
       addVenta, deleteVenta,
+      updateRol,
       addSabor, updateSabor, deleteSabor, addBacha, removeBacha,
       addPaleta, updatePaleta, deletePaleta,
       addGasto, deleteGasto, updateMetas,

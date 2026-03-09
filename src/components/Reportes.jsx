@@ -10,6 +10,15 @@ import {
 
 const todayStr = () => new Date().toISOString().slice(0, 10)
 
+function descargarCSV(filas, nombreArchivo) {
+  const contenido = filas.map(f => f.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob(['\uFEFF' + contenido], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = nombreArchivo; a.click()
+  URL.revokeObjectURL(url)
+}
+
 function isSameDay(dateStr, refStr) {
   return new Date(dateStr).toDateString() === new Date(refStr).toDateString()
 }
@@ -201,6 +210,35 @@ function PorPeriodo({ ventas, gastos }) {
   const ganancia = totalIngresos - totalGastos
   const ticketProm = ventasPeriodo.length > 0 ? Math.round(totalIngresos / ventasPeriodo.length) : 0
 
+  const exportarVentasCSV = () => {
+    const filas = [
+      ['Fecha', 'Tipo', 'Sabores / Paleta', 'Bolas', 'Cantidad', 'Precio unit.', 'Total'],
+      ...ventasPeriodo.map(v => [
+        new Date(v.fecha).toLocaleString('es-CL'),
+        v.tipo,
+        v.tipo === 'paleta' ? v.paletaNombre : v.saboresElegidos.join(' + '),
+        v.bolas,
+        v.cantidad,
+        v.precio,
+        v.total,
+      ])
+    ]
+    descargarCSV(filas, `ventas_${String(ini).slice(0,10)}_${String(fin).slice(0,10)}.csv`)
+  }
+
+  const exportarGastosCSV = () => {
+    const filas = [
+      ['Fecha', 'Categoría', 'Descripción', 'Monto'],
+      ...gastosPeriodo.map(g => [
+        new Date(g.fecha).toLocaleDateString('es-CL'),
+        g.categoria,
+        g.descripcion,
+        g.monto,
+      ])
+    ]
+    descargarCSV(filas, `gastos_${String(ini).slice(0,10)}_${String(fin).slice(0,10)}.csv`)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 flex-wrap">
@@ -238,6 +276,21 @@ function PorPeriodo({ ventas, gastos }) {
           icon={ganancia >= 0 ? '📈' : '📉'}
         />
         <StatCard titulo="Ticket promedio" valor={clp(ticketProm)} sub="por venta" borderColor="border-amber-400" bgColor="bg-amber-50" textColor="text-amber-600" icon="🎟️" />
+      </div>
+
+      <div className="flex gap-3 flex-wrap">
+        <button
+          onClick={exportarVentasCSV}
+          disabled={ventasPeriodo.length === 0}
+          className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white text-sm font-semibold rounded-xl hover:bg-sky-600 transition disabled:opacity-40">
+          ⬇️ Exportar ventas CSV
+        </button>
+        <button
+          onClick={exportarGastosCSV}
+          disabled={gastosPeriodo.length === 0}
+          className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white text-sm font-semibold rounded-xl hover:bg-pink-600 transition disabled:opacity-40">
+          ⬇️ Exportar gastos CSV
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl p-6 shadow-sm">

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
-import { PRECIOS_HELADO, clp } from '../data/initialData'
+import { clp } from '../data/initialData'
 
 const TIPO_ICON = { cono: '🍦', vasito: '🥤', paleta: '🍭' }
 const TIPO_LABEL = { cono: 'Cono', vasito: 'Vasito', paleta: 'Paleta' }
@@ -12,7 +12,8 @@ function DescVenta(v) {
 }
 
 export default function Ventas() {
-  const { sabores, paletas, ventas, addVenta, deleteVenta } = useApp()
+  const { sabores, paletas, ventas, metas, addVenta, deleteVenta } = useApp()
+  const PRECIOS_HELADO = { 1: metas.precio_1bola, 2: metas.precio_2bolas, 3: metas.precio_3bolas }
   const { usuario } = useAuth()
   const esAdmin = usuario?.rol === 'admin'
 
